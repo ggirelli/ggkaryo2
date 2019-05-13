@@ -238,6 +238,8 @@ ggkaryo <- setRefClass("ggkaryo",
       track[, norm := value / max(value, na.rm = T)]
       track[is.na(norm), norm := 0]
 
+      stopifnot(all(track[, .(v=unique(diff(start))), by=chrom]$v == step))
+
       set_gaps_to_zero = function(chrom_data, step) {
         id = which(diff(chrom_data$start) != step)
         stopifnot( 0 == length(id) || id == 1 )
@@ -275,8 +277,9 @@ ggkaryo <- setRefClass("ggkaryo",
         do.call(rbind, list(pre, ct, pos))
       }))
 
-      .self$data[['tracks']] = c(.self$data[['tracks']],
-        list(data = track, position = position, color = color))
+      nTracks = length(.self$data[['tracks']])
+      .self$data[['tracks']][[nTracks+1]] = list(
+        data = track, position = position, color = color)
     },
 
     add_lois = function(data, position, colorName, alpha = 1) {
@@ -299,14 +302,18 @@ ggkaryo <- setRefClass("ggkaryo",
     plot = function() {
       "Plots the current ggkaryo object."
 
-      # nTracks = length(.self$data[['tracks']])
-      # lapply(1:nTracks, function(trackID) {
-      #   track = .self$data[['tracks']][[trackID]]
+      p = .self$data[['plot']]
 
-        
-      # })
+      nTracks = length(.self$data[['tracks']])
+      for ( trackID in 1:nTracks ) {
+        track = .self$data[['tracks']][[trackID]]$data
+        track[, x := .self$chromID2x(chromID)+.self$chrom_width+norm]
+        track[, y := start+(end-start)/2]
+        p = p + geom_path(data = as.data.frame(track),
+          aes(group = chrom), color = "red")
+      }
 
-      print(.self$data[['plot']])
+      print(p+xlim(0,5))
     }
   )
 )
@@ -323,13 +330,13 @@ ggk$add_chrom_labels()
 
 # Add profile
 trackData = as.data.table(readRDS("track_test.rds"
-  ))[, .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
-ggk$add_track(trackData, "right")
+  ))[!is.na(value), .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
+ggk$add_track(trackData, 499500, "right")
 
 # Add loci of interest
 # ggk$add_lois(loiData, "right", "sample")
 
 # Show plot
-ggk$plot()
+#ggk$plot()
 
 #ggk
