@@ -1,4 +1,4 @@
-library(cowplot)
+require(cowplot)
 require(data.table)
 require(ggplot2)
 
@@ -311,25 +311,25 @@ ggkaryo <- setRefClass("ggkaryo",
   )
 )
 
-# # Initialize ggkaryo object (only ideograms)
-# ggk = ggkaryo("/mnt/data/Resources/hg19.giemsa_bands.bed",
-#   chrom_width = 0.75, chrom_padding = 5)
+# Initialize ggkaryo object (only ideograms)
+ggk = ggkaryo("giemsa.bed",
+  chrom_width = 0.75, chrom_padding = 5)
 
-# # Add boxes around chromosome arms
-# ggk$add_arm_boxes()
+# Add boxes around chromosome arms
+ggk$add_arm_boxes()
 
-# # Add chromosome labels
-# ggk$add_chrom_labels()
+# Add chromosome labels
+ggk$add_chrom_labels()
 
-# # Add profile
-# trackData = as.data.table(readRDS("/home/gire/Desktop/Code/src/190507_jesko/profile.rds"
-#   ))[, .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
-# ggk$add_track(trackData, "right")
+# Add profile
+trackData = as.data.table(readRDS("track_test.rds"
+  ))[, .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
+ggk$add_track(trackData, "right")
 
-# # Add loci of interest
-# # ggk$add_lois(loiData, "right", "sample")
+# Add loci of interest
+# ggk$add_lois(loiData, "right", "sample")
 
-# # Show plot
-# ggk$plot()
+# Show plot
+ggk$plot()
 
-# #ggk
+#ggk
