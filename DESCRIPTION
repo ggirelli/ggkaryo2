@@ -1,9 +1,23 @@
 Package: ggkaryo
-Title: What the Package Does (one line, title case)
+Title: Overlay karyotype and data-track profiles in a ggplot-compatible manner.
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: person("Gabriele", "Girelli", email = "gigi.ga90@gmail.com", role = c("aut", "cre"))
+Description: ggkaryo is fully based on ggplot. It allows to plot a simple
+	karyotype, or a karyotype with one/multiple data-track profile(s). This can
+	be useful when visualizing multiple informations, as it allows to easily
+	identify the localization (e.g., genomic coordinate, location relative to
+	centromere/telomeres, ...) of any region of interest based on a data-track
+	profile. The karyotype is automatically built from a giemsa-staining bed
+	file, and the data-track are added as additional bed files. ggkaryo supports
+	simultaneously plotting, onto a karyotype, any number of data-tracks as
+	profiles, and to highlight loci of interest. Being fully based on ggplot,
+	the users can easily customize a ggkaryo plot and add their own custom
+	layers to it.
 Depends: R (>= 3.6.0)
-License: What license is it under?
+Imports:
+	data.table,
+	ggplot2
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.1.9000
