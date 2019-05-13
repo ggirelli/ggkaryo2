@@ -2,7 +2,7 @@ library(cowplot)
 require(data.table)
 require(ggplot2)
 
-#' ggkaryo class for karyotype plotting.
+#' ggkaryo: a class for karyotype plotting and overlaying.
 #'
 #' ggkaryo full description
 #'
@@ -34,14 +34,14 @@ ggkaryo <- setRefClass("ggkaryo",
       "@param giemsa (character) path to Giemsa BED5+ file.
       @param giemsa (data.table) data table with Giemsa BED5+ file info."
       stopifnot(length(giemsa_levels) == length(giemsa_palette))
-      stopifnot(chrom_width >= 1)
+      stopifnot(chrom_width > 0)
       stopifnot(chrom_padding >= chrom_width)
 
       callSuper(...,
         n_chrom=n_chrom, hetero=hetero,
         chrom_width=chrom_width, chrom_padding=chrom_padding,
         giemsa_palette=giemsa_palette, giemsa_levels=giemsa_levels,
-        opposite=opposite, data=list())
+        opposite=opposite, data=list(tracks=list()))
       names(.self$giemsa_palette) = giemsa_levels
 
       .self$prep4karyo(giemsa)
@@ -208,30 +208,75 @@ ggkaryo <- setRefClass("ggkaryo",
       NULL
     },
 
-    add_track = function(data, step,
+    add_track = function(track, step,
       position = "auto", color = "auto", alpha = .5) {
-      "Adds a profile to the current ggkaryo plot. The input data must have
+      "Adds a profile to the current ggkaryo plot. The input track must have
       already been binned with a consistent step. A consistent step is needed
       to automatically set any gap to 0 in the profile.
-      @param data (string) path to BED5+ file.
-      @param data (data.table) BED5+ data table.
+      @param track (string) path to BED5+ file.
+      @param track (data.table) BED5+ data table.
       @param step (numerical) bin step in nt.
       @param position (string) one of auto|left|right. 'left' can be used only
         if opposite=T was used when initializing the ggkaryo object.
       @param color (string) either 'auto' or a color string.
       @param alpha (numerical) opacity level."
       stopifnot(position %in% c("auto", "right", "left"))
-      if ( is(data, "character") ) {
-        stopifnot(file.exists(data))
-        data = fread(data)
+      if ( is(track, "character") ) {
+        stopifnot(file.exists(track))
+        track = fread(track)
       }
-      stopifnot(is(data, "data.table"))
-      stopifnot(ncol(data) >= 5)
-      data = data[, 1:5]
-      colnames(data) = c("chrom", "start", "end", "name", "value")
-      data[, chromID := unlist(lapply(chrom, .self$chrom2id))]
-      
-      NULL
+      stopifnot(is(track, "data.table"))
+      stopifnot(ncol(track) >= 5)
+      track = track[, 1:5]
+      colnames(track) = c("chrom", "start", "end", "name", "value")
+      track[, chromID := unlist(lapply(chrom, .self$chrom2id))]
+
+      track = track[order(start)]
+      track = track[order(chromID)]
+
+      track[, norm := value - min(value, na.rm = T)]
+      track[, norm := value / max(value, na.rm = T)]
+      track[is.na(norm), norm := 0]
+
+      set_gaps_to_zero = function(chrom_data, step) {
+        id = which(diff(chrom_data$start) != step)
+        stopifnot( 0 == length(id) || id == 1 )
+        
+        basepoints = chrom_data[c(id[1], id[1]+1),]
+        basepoints[, norm := 0]
+        if ( 1 == length(id) ) {
+          return(do.call(rbind, list(
+            chrom_data[1:id[1],],
+            basepoints,
+            chrom_data[(id[1]+1):nrow(chrom_data),])))
+        } else {
+          out = do.call(rbind, list(
+            chrom_data[1:id[1],],
+            basepoints,
+            do.call(rbind, lapply(2:length(id), FUN = function(ii) {
+              basepoints = chrom_data[c(id[ii], id[ii]+1),]
+              basepoints[, norm := 0]
+              rbind(chrom_data[(id[ii-1]+1):id[ii],], basepoints)
+            })),
+            chrom_data[(id[length(id)]+1):nrow(chrom_data),]
+          ))
+          return(out)
+        }
+      }
+      track = track[, set_gaps_to_zero(.SD, step), by = chrom]
+
+      track = do.call(rbind, by(track, track$chrom, FUN = function(ct) {
+        pre = ct[1,]
+        pre$value = NA
+        pre$norm = 0
+        pos = ct[nrow(ct),]
+        pos$value = NA
+        pos$norm = 0
+        do.call(rbind, list(pre, ct, pos))
+      }))
+
+      .self$data[['tracks']] = c(.self$data[['tracks']],
+        list(data = track, position = position, color = color))
     },
 
     add_lois = function(data, position, colorName, alpha = 1) {
@@ -253,28 +298,38 @@ ggkaryo <- setRefClass("ggkaryo",
 
     plot = function() {
       "Plots the current ggkaryo object."
+
+      # nTracks = length(.self$data[['tracks']])
+      # lapply(1:nTracks, function(trackID) {
+      #   track = .self$data[['tracks']][[trackID]]
+
+        
+      # })
+
       print(.self$data[['plot']])
     }
   )
 )
 
-# Initialize ggkaryo object (only ideograms)
-ggk = ggkaryo("/mnt/data/Resources/hg19.giemsa_bands.bed",
-  chrom_width = 2, chrom_padding = 5)
+# # Initialize ggkaryo object (only ideograms)
+# ggk = ggkaryo("/mnt/data/Resources/hg19.giemsa_bands.bed",
+#   chrom_width = 0.75, chrom_padding = 5)
 
-# Add boxes around chromosome arms
-ggk$add_arm_boxes()
+# # Add boxes around chromosome arms
+# ggk$add_arm_boxes()
 
-# Add chromosome labels
-ggk$add_chrom_labels()
+# # Add chromosome labels
+# ggk$add_chrom_labels()
 
-# Add profile
+# # Add profile
+# trackData = as.data.table(readRDS("/home/gire/Desktop/Code/src/190507_jesko/profile.rds"
+#   ))[, .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
 # ggk$add_track(trackData, "right")
 
-# Add loci of interest
-# ggk$add_lois(loiData, "right", "sample")
+# # Add loci of interest
+# # ggk$add_lois(loiData, "right", "sample")
 
-# Show plot
-ggk$plot()
+# # Show plot
+# ggk$plot()
 
-#ggk
+# #ggk
