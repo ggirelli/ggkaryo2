@@ -10,7 +10,7 @@
 #'
 #' @import cowplot
 #' @import data.table
-#' @import ggplot
+#' @import ggplot2
 #' @import RColorBrewer
 #' 
 #' @field n_chrom (numerical) number of chromosomes, default: 24
