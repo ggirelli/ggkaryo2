@@ -175,9 +175,9 @@ ggkaryo <- setRefClass("ggkaryo",
       \\value{returns data.table: adjusted giemsa data.table}"
       if ( is(giemsa, "character") ) {
         stopifnot(file.exists(giemsa))
-        giemsa = data.table::fread(giemsa)
+        giemsa = fread(giemsa)
       }
-      stopifnot(is(giemsa, "data.table"))
+      stopifnot(is.data.table(giemsa))
       stopifnot(ncol(giemsa) >= 5)
       giemsa = giemsa[, 1:5]
       colnames(giemsa) = c("chrom", "start", "end", "name", "value")
@@ -191,7 +191,7 @@ ggkaryo <- setRefClass("ggkaryo",
       Builds .self$data[['bands']] object."
 
       stopifnot("giemsa" %in% names(.self$data))
-      stopifnot(is(.self$data[['giemsa']], "data.table"))
+      stopifnot(is.data.table(.self$data[['giemsa']]))
 
       non_acen_bands = data.table(
         chrom = rep(.self$data[["giemsa"]]$chrom, each = 4),
@@ -237,7 +237,7 @@ ggkaryo <- setRefClass("ggkaryo",
       chromosomes in two arms. Builds .self$data[['boxes']] object."
 
       stopifnot("giemsa" %in% names(.self$data))
-      stopifnot(is(.self$data[['giemsa']], "data.table"))
+      stopifnot(is.data.table(.self$data[['giemsa']]))
 
       select_chrom_arms = function(chrom_data) {
         chrom_x = .self$chromID2x(chrom_data[1, chromID])
@@ -273,7 +273,7 @@ ggkaryo <- setRefClass("ggkaryo",
       Builds .self$data[['chrom_labels']] object."
 
       stopifnot("giemsa" %in% names(.self$data))
-      stopifnot(is(.self$data[['giemsa']], "data.table"))
+      stopifnot(is.data.table(.self$data[['giemsa']]))
 
       .self$data[['chrom_labels']] = .self$data[["giemsa"]][, .(
           x = min(x) + .self$chrom_width/2,
@@ -285,7 +285,7 @@ ggkaryo <- setRefClass("ggkaryo",
       "Prepares for plotting. Builds .self$data[['plot']] object."
 
       stopifnot("bands" %in% names(.self$data))
-      stopifnot(is(.self$data[['bands']], "data.table"))
+      stopifnot(is.data.table(.self$data[['bands']]))
 
       .self$data[['plot']] = ggplot(.self$data[['bands']], aes(x=x, y=-y)
         ) + geom_polygon(aes(fill=value, group=bandID)
@@ -375,7 +375,7 @@ ggkaryo <- setRefClass("ggkaryo",
         {\\code{...}}{(mixed) additional parameters to pass to fun.aggreg}
       }
       \\value{returns data.table: binned track}"
-      stopifnot(is(track, "data.table"))
+      stopifnot(isdata.table(track))
       stopifnot(ncol(track) >= 5)
       stopifnot(method %in% c("within", "overlap"))
       track = track[, 1:5]
@@ -433,7 +433,7 @@ ggkaryo <- setRefClass("ggkaryo",
         stopifnot(file.exists(track))
         track = data.table::fread(track)
       }
-      stopifnot(is(track, "data.table"))
+      stopifnot(is.data.table(track))
       stopifnot(ncol(track) >= 5)
       track = track[, 1:5]
       colnames(track) = c("chrom", "start", "end", "name", "value")
@@ -510,7 +510,7 @@ ggkaryo <- setRefClass("ggkaryo",
         stopifnot(file.exists(loiData))
         loiData = data.table::fread(loiData)
       }
-      stopifnot(is(loiData, "data.table"))
+      stopifnot(is.data.table(loiData))
       stopifnot(ncol(loiData) >= 5)
       stopifnot(colorName %in% names(loiData))
       loiData = loiData[, .SD, .SDcols=c(1:5, which(names(loiData)==colorName))]
