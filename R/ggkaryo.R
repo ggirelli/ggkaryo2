@@ -345,8 +345,12 @@ ggkaryo <- setRefClass("ggkaryo",
         data = .self$data[['chrom_labels']], aes(label = chrom), size = 5)
     },
 
-    plot = function() {
-      "Plots the current ggkaryo object."
+    plot_base = function() {
+      "Plots the current ggkaryo object (only basic layers)."
+      print(.self$data[['plot']])
+    },
+    plot_full = function() {
+      "Plots the current ggkaryo object with tracks and lois."
 
       p = .self$data[['plot']]
 
@@ -354,9 +358,10 @@ ggkaryo <- setRefClass("ggkaryo",
       if ( 0 != nTracks ) {
         for ( trackID in 1:nTracks ) {
           track = .self$data[['tracks']][[trackID]]$data
-          track[, x := .self$chromID2x(chromID)+.self$chrom_width+norm]
+          track[, x := .self$chromID2x(chromID)]
+          track[, x := x+.self$chrom_width+norm*.self$chrom_padding]
           track[, y := start+(end-start)/2]
-          p = p + geom_path(data = as.data.frame(track),
+          p = p + geom_polygon(data = as.data.frame(track),
             aes(group = chrom), fill = "red")
         }
       }
