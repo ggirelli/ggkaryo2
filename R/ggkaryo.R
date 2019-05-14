@@ -7,6 +7,11 @@
 #' @name ggkaryo
 #' @export ggkaryo
 #' @exportClass ggkaryo
+#'
+#' @import cowplot
+#' @import data.table
+#' @import ggplot
+#' @import RColorBrewer
 #' 
 #' @field n_chrom (numerical) number of chromosomes, default: 24
 #' @field hetero (character) heterosome labels (without "chr"),
@@ -101,11 +106,6 @@ ggkaryo <- setRefClass("ggkaryo",
       stopifnot(length(giemsa_levels) == length(giemsa_palette))
       stopifnot(chrom_width > 0)
       stopifnot(chrom_padding >= chrom_width)
-
-      require(cowplot)
-      require(data.table)
-      require(ggplot2)
-      require(RColorBrewer)
 
       callSuper(...,
         n_chrom=n_chrom, hetero=hetero,

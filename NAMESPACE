@@ -2,3 +2,7 @@
 
 export(ggkaryo)
 exportClasses(ggkaryo)
+import(RColorBrewer)
+import(cowplot)
+import(data.table)
+import(ggplot)
