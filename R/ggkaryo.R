@@ -139,7 +139,7 @@ ggkaryo <- setRefClass("ggkaryo",
         \\item{\\code{chrom}}{
           (string) chromosome signature (e.g., 'chr1' or '1')}
       }
-      \\describe{returns numeric: chromosome numerical ID}"
+      \\describe{\\item{returns}{numeric: chromosome numerical ID}}"
       if ( grepl("^chr", chrom) ) chrom = gsub("^chr", "", chrom)
       if ( grepl(":", chrom) ) {
         return(floor(as.numeric(gsub(":", ".", chrom))))
@@ -156,19 +156,17 @@ ggkaryo <- setRefClass("ggkaryo",
       \\describe{
         \\item{\\code{chromID}}{(numeric)}
       }
-      \\describe{returns numeric: chromosome position on the X axis}"
+      \\describe{\\item{returns}{numeric: chromosome position on the X axis}}"
       return((chromID-1)*(.self$chrom_width + .self$chrom_padding))
     },
     norm2x = function(chromID, norm, position) {
       "Converts normalized score to X coordinate in the ggkaryo plot.
       \\describe{
         \\item{\\code{chromID}}{(numeric)}
-
         \\item{\\code{norm}}{(numeric) normalized score}
-
         \\item{\\code{position}}{(character) 'left' or 'right'}
       }
-      \\describe{returns numeric: normalized score X coordinate}"
+      \\describe{\\item{returns}{numeric: normalized score X coordinate}}"
       padding = .self$chrom_padding
       if ( .self$opposite )
         padding = padding / 2
@@ -186,7 +184,7 @@ ggkaryo <- setRefClass("ggkaryo",
         \\item{\\code{giemsa}}{(character) path to giemsa BED5+ file}
         \\item{\\code{giemsa}}{(data.table) data table with giemsa BED5+ data}
       }
-      \\describe{returns data.table: adjusted giemsa data.table}"
+      \\describe{\\item{returns}{data.table: adjusted giemsa data.table}}"
       if ( is(giemsa, "character") ) {
         stopifnot(file.exists(giemsa))
         giemsa = fread(giemsa)
@@ -316,7 +314,7 @@ ggkaryo <- setRefClass("ggkaryo",
         \\item{\\code{giemsa}}{(character) path to giemsa BED5+ file}
         \\item{\\code{giemsa}}{(data.table) data table with giemsa BED5+ data}
       }
-      \\describe{returns data.table: adjusted giemsa data.table}"
+      \\describe{\\item{returns}{data.table: adjusted giemsa data.table}}"
       .self$data[["giemsa"]] = .self$read_giemsa(giemsa)
       .self$prep4bands()
       .self$prep4boxes()
@@ -377,18 +375,13 @@ ggkaryo <- setRefClass("ggkaryo",
       include ('within' method) or overlap even partially ('overlap' method).
       \\describe{
         \\item{\\code{track}}{(data.table) BED5+ track data table}
-
         \\item{\\code{size}}{(numeric) bin size in nt}
-
         \\item{\\code{step}}{(numeric) bin step in nt}
-
         \\item{\\code{method}}{(string) either 'within' or 'overlap'}
-
         \\item{\\code{fun.aggreg}}{(function) how to aggregate values in bins}
-
         \\item{\\code{...}}{(mixed) additional parameters to pass to fun.aggreg}
       }
-      \\describe{returns data.table: binned track}"
+      \\describe{\\item{returns}{data.table: binned track}}"
       stopifnot(isdata.table(track))
       stopifnot(ncol(track) >= 5)
       stopifnot(method %in% c("within", "overlap"))
@@ -431,14 +424,10 @@ ggkaryo <- setRefClass("ggkaryo",
       \\describe{
         \\item{\\code{track}}{(character) path to BED5+ file}
         \\item{\\code{track}}{(data.table) BED5+ data table}
-
         \\item{\\code{step}}{(numerical) bin step in nt}
-
         \\item{\\code{position}}{(character) one of auto|left|right. 'left' can be used
           only if opposite=T was used when initializing the ggkaryo object}
-
         \\item{\\code{color}}{(character) either 'auto' or a color string}
-
         \\item{\\code{alpha}}{(numerical) opacity level.}
       }"
       position = .self$get_next_position(position)

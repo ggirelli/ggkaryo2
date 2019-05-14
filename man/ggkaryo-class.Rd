@@ -59,22 +59,18 @@ Builds .self\$data[['lois']].
 }}
 
 \item{\code{add_track(track, step, position = "auto", color = "auto", alpha = 0.5)}}{Adds a profile to the current ggkaryo plot. The input track must have
-      already been binned with a consistent step. A consistent step is needed
-      to automatically set any gap to 0 in the profile.
-      Builds .self\$data[['tracks']].
-      \describe{
-        \item{\code{track}}{(character) path to BED5+ file}
-        \item{\code{track}}{(data.table) BED5+ data table}
-
-        \item{\code{step}}{(numerical) bin step in nt}
-
-        \item{\code{position}}{(character) one of auto|left|right. 'left' can be used
-          only if opposite=T was used when initializing the ggkaryo object}
-
-        \item{\code{color}}{(character) either 'auto' or a color string}
-
-        \item{\code{alpha}}{(numerical) opacity level.}
-      }}
+already been binned with a consistent step. A consistent step is needed
+to automatically set any gap to 0 in the profile.
+Builds .self\$data[['tracks']].
+\describe{
+  \item{\code{track}}{(character) path to BED5+ file}
+  \item{\code{track}}{(data.table) BED5+ data table}
+  \item{\code{step}}{(numerical) bin step in nt}
+  \item{\code{position}}{(character) one of auto|left|right. 'left' can be used
+    only if opposite=T was used when initializing the ggkaryo object}
+  \item{\code{color}}{(character) either 'auto' or a color string}
+  \item{\code{alpha}}{(numerical) opacity level.}
+}}
 
 \item{\code{add_track_overlay(p)}}{Overlays track profiles to a ggkaryo plot.
 \describe{
@@ -82,35 +78,30 @@ Builds .self\$data[['lois']].
 }}
 
 \item{\code{bin_track(track, size, step, method = "within", fun.aggreg = mean, ...)}}{Bins a track based on provided bin size and step.
-      Regions from the track are assigned to the bins when they are completely
-      include ('within' method) or overlap even partially ('overlap' method).
-      \describe{
-        \item{\code{track}}{(data.table) BED5+ track data table}
-
-        \item{\code{size}}{(numeric) bin size in nt}
-
-        \item{\code{step}}{(numeric) bin step in nt}
-
-        \item{\code{method}}{(string) either 'within' or 'overlap'}
-
-        \item{\code{fun.aggreg}}{(function) how to aggregate values in bins}
-
-        \item{\code{...}}{(mixed) additional parameters to pass to fun.aggreg}
-      }
-      \describe{returns data.table: binned track}}
+Regions from the track are assigned to the bins when they are completely
+include ('within' method) or overlap even partially ('overlap' method).
+\describe{
+  \item{\code{track}}{(data.table) BED5+ track data table}
+  \item{\code{size}}{(numeric) bin size in nt}
+  \item{\code{step}}{(numeric) bin step in nt}
+  \item{\code{method}}{(string) either 'within' or 'overlap'}
+  \item{\code{fun.aggreg}}{(function) how to aggregate values in bins}
+  \item{\code{...}}{(mixed) additional parameters to pass to fun.aggreg}
+}
+\describe{\item{returns}{data.table: binned track}}}
 
 \item{\code{chrom2id(chrom)}}{Converts a chromosome signature (seqname) to a numerical id.
 \describe{
   \item{\code{chrom}}{
     (string) chromosome signature (e.g., 'chr1' or '1')}
 }
-\describe{returns numeric: chromosome numerical ID}}
+\describe{\item{returns}{numeric: chromosome numerical ID}}}
 
 \item{\code{chromID2x(chromID)}}{Retrieve the position of a chromosome on the X axis.
 \describe{
   \item{\code{chromID}}{(numeric)}
 }
-\describe{returns numeric: chromosome position on the X axis}}
+\describe{\item{returns}{numeric: chromosome position on the X axis}}}
 
 \item{\code{get_color(color, trackID)}}{Extracts, in order, track colors from the .self\$track_palette_name.
 See RColorBrewer for more details.
@@ -133,14 +124,12 @@ left/right sides of the ideograms.
   "gvar", "stalk"), opposite = FALSE)}}{Initializer method. See \code{ggkaryo} description for more details}
 
 \item{\code{norm2x(chromID, norm, position)}}{Converts normalized score to X coordinate in the ggkaryo plot.
-      \describe{
-        \item{\code{chromID}}{(numeric)}
-
-        \item{\code{norm}}{(numeric) normalized score}
-
-        \item{\code{position}}{(character) 'left' or 'right'}
-      }
-      \describe{returns numeric: normalized score X coordinate}}
+\describe{
+  \item{\code{chromID}}{(numeric)}
+  \item{\code{norm}}{(numeric) normalized score}
+  \item{\code{position}}{(character) 'left' or 'right'}
+}
+\describe{\item{returns}{numeric: normalized score X coordinate}}}
 
 \item{\code{plot_base()}}{Plots the current ggkaryo object (only basic layers).}
 
@@ -159,7 +148,7 @@ each chromosome arm.
   \item{\code{giemsa}}{(character) path to giemsa BED5+ file}
   \item{\code{giemsa}}{(data.table) data table with giemsa BED5+ data}
 }
-\describe{returns data.table: adjusted giemsa data.table}}
+\describe{\item{returns}{data.table: adjusted giemsa data.table}}}
 
 \item{\code{prep4labels()}}{Prepares data for plotting chromosome labels.
 Builds .self\$data[['chrom_labels']] object.}
@@ -171,7 +160,7 @@ Builds .self\$data[['chrom_labels']] object.}
   \item{\code{giemsa}}{(character) path to giemsa BED5+ file}
   \item{\code{giemsa}}{(data.table) data table with giemsa BED5+ data}
 }
-\describe{returns data.table: adjusted giemsa data.table}}
+\describe{\item{returns}{data.table: adjusted giemsa data.table}}}
 }}
 
 \examples{
