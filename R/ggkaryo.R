@@ -1,6 +1,7 @@
 require(cowplot)
 require(data.table)
 require(ggplot2)
+require(RColorBrewer)
 
 #' ggkaryo: a class for karyotype plotting and overlaying.
 #'
@@ -13,6 +14,7 @@ ggkaryo <- setRefClass("ggkaryo",
     hetero = "character",
     chrom_width = "numeric",
     chrom_padding = "numeric",
+    track_palette_name = "character",
     giemsa_palette = "character",
     giemsa_levels = "character",
     opposite = "logical",
@@ -23,6 +25,7 @@ ggkaryo <- setRefClass("ggkaryo",
     initialize = function(giemsa, ...,
         n_chrom=24, hetero=c("X", "Y"),
         chrom_width=1, chrom_padding=5,
+        track_palette_name = "Paired",
         giemsa_palette=c(
           "#DDDDDD", "#9A9A9A", "#787878", "#555555", "#333333",
           "#FF0000", "#C4FFFC", "#AFE6FF"),
@@ -40,6 +43,7 @@ ggkaryo <- setRefClass("ggkaryo",
       callSuper(...,
         n_chrom=n_chrom, hetero=hetero,
         chrom_width=chrom_width, chrom_padding=chrom_padding,
+        track_palette_name=track_palette_name,
         giemsa_palette=giemsa_palette, giemsa_levels=giemsa_levels,
         opposite=opposite, data=list(tracks=list()))
       names(.self$giemsa_palette) = giemsa_levels
@@ -67,6 +71,17 @@ ggkaryo <- setRefClass("ggkaryo",
       @param chromID (numeric)
       @returns numeric: chromosome position on the X axis"
       return((chromID-1)*(.self$chrom_width + .self$chrom_padding))
+    },
+    norm2x = function(chromID, norm, position) {
+      padding = .self$chrom_padding
+      if ( .self$opposite )
+        padding = padding / 2
+      if ( "right" == position ) {
+        return(.self$chromID2x(chromID)+.self$chrom_width+norm*padding)
+      } else {
+        stopifnot(.self$opposite)
+        return(.self$chromID2x(chromID)-norm*padding)
+      }
     },
 
     read_giemsa = function(giemsa) {
@@ -208,6 +223,44 @@ ggkaryo <- setRefClass("ggkaryo",
       NULL
     },
 
+    get_color = function(color, trackID) {
+      "Extracts, in order, track colors from the ggk$track_palette_name.
+      See RColorBrewer for more details."
+      if ( "auto" == color ) {
+        nTracks = max(3, length(.self$data[["tracks"]]))
+        color = brewer.pal(nTracks, .self$track_palette_name)[trackID]
+      }
+      color
+    },
+    get_next_position = function(position) {
+      "Selects position for the next track in such a fashion to balance out
+      left/right sides of the ideograms."
+      stopifnot(position %in% c("auto", "right", "left"))
+      if ( "auto" == position ) {
+        if ( 0 == length(.self$data[['tracks']]) )
+          return("right")
+        if ( !.self$opposite ) {
+          position = "right"
+        } else {
+          position_count = table(unlist(lapply(.self$data[['tracks']],
+            function(x) x$position)))
+          position_count = data.table(
+            label = c("right", "left"),
+            n = c(
+              max(0, position_count["right"], na.rm = T),
+              max(0, position_count["left"], na.rm = T)
+            )
+          )
+          if ( position_count[1, n] == position_count[2, n] ) {
+            return("right")
+          } else {
+            return(position_count[which.min(position_count$n), label])
+          }
+        }
+      }
+      position
+    },
+
     bin_track = function(track, size, step, method="within",
       fun.aggreg=mean, ...) {
       "Bins a track based on provided bin size and step.
@@ -264,7 +317,8 @@ ggkaryo <- setRefClass("ggkaryo",
         if opposite=T was used when initializing the ggkaryo object.
       @param color (string) either 'auto' or a color string.
       @param alpha (numerical) opacity level."
-      stopifnot(position %in% c("auto", "right", "left"))
+      position = .self$get_next_position(position)
+      stopifnot(alpha <= 1 & alpha > 0)
       if ( is(track, "character") ) {
         stopifnot(file.exists(track))
         track = fread(track)
@@ -324,8 +378,9 @@ ggkaryo <- setRefClass("ggkaryo",
       track = track[, add_chrom_ends(.SD), by=chrom]
 
       nTracks = length(.self$data[['tracks']])
+
       .self$data[['tracks']][[nTracks+1]] = list(
-        data = track, position = position, color = color)
+        data = track, position = position, color = color, alpha = alpha)
     },
 
     add_lois = function(data, position, colorName, alpha = 1) {
@@ -357,12 +412,14 @@ ggkaryo <- setRefClass("ggkaryo",
       nTracks = length(.self$data[['tracks']])
       if ( 0 != nTracks ) {
         for ( trackID in 1:nTracks ) {
-          track = .self$data[['tracks']][[trackID]]$data
-          track[, x := .self$chromID2x(chromID)]
-          track[, x := x+.self$chrom_width+norm*.self$chrom_padding]
-          track[, y := start+(end-start)/2]
-          p = p + geom_polygon(data = as.data.frame(track),
-            aes(group = chrom), fill = "red")
+          track = .self$data[['tracks']][[trackID]]
+
+          track$data[, x := .self$norm2x(chromID,norm,track$position), by=chrom]
+          track$data[, y := start+(end-start)/2]
+
+          p = p + geom_polygon(data = as.data.frame(track$data),
+            aes(group = chrom), fill = get_color(track$color, trackID),
+            alpha = track$alpha)
         }
       }
 
@@ -372,8 +429,7 @@ ggkaryo <- setRefClass("ggkaryo",
 )
 
 # Initialize ggkaryo object (only ideograms)
-ggk = ggkaryo("giemsa.bed",
-  chrom_width = 0.75, chrom_padding = 5)
+ggk = ggkaryo("giemsa.bed", chrom_width = 0.75, chrom_padding = 5, opposite = F)
 
 # Add boxes around chromosome arms
 ggk$add_arm_boxes()
@@ -382,15 +438,18 @@ ggk$add_arm_boxes()
 ggk$add_chrom_labels()
 
 # Add profile
-trackData = as.data.table(readRDS("track_test.rds"
-  ))[!is.na(value), .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
-binnedTrack = ggk$bin_track(trackData, 1e6, 1e5, na.rm=T)
-ggk$add_track(binnedTrack, 1e5, "right")
+binnedTrack = readRDS("track_test.rds")
+binnedTrack2 = copy(binnedTrack)
+binnedTrack[, value := value*abs(rnorm(nrow(binnedTrack)))]
+binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
+ggk$add_track(binnedTrack, 1e5, color = "red")
+ggk$add_track(binnedTrack2, 1e5)
 
 # Add loci of interest
 # ggk$add_lois(loiData, "right", "sample")
 
 # Show plot
-ggk$plot()
+ggk$plot_base()
+ggk$plot_full()
 
 #ggk
