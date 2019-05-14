@@ -175,23 +175,23 @@ Builds .self$data[['chrom_labels']] object.}
 
 \examples{
 # Plot ideogram
-ggk = ggkaryo("giemsa.bed")
+ggk = ggkaryo(data('giemsa', package='ggkaryo'))
 ggk$plot_full()
 
 # Plot ideogram with boxes around chromosome arms and labels
-ggk = ggkaryo("giemsa.bed")
+ggk = ggkaryo(data('giemsa', package='ggkaryo'))
 ggk$add_arm_boxes()
 ggk$add_chrom_labels()
 ggk$plot_full()
 
 # Plot ideogram with one profile track
-ggk = ggkaryo("giemsa.bed")
-binnedTrack = readRDS("track_test.rds")
+ggk = ggkaryo(data('giemsa', package='ggkaryo'))
+binnedTrack = data('track', package='ggkaryo')
 ggk$add_track(binnedTrack, 1e5)
 ggk$plot_full()
 
 # Plot ideogram with two profile tracks on the same side
-ggk = ggkaryo("giemsa.bed")
+ggk = ggkaryo(data('giemsa', package='ggkaryo'))
 binnedTrack2 = copy(binnedTrack)
 binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
 ggk$add_track(binnedTrack, 1e5)
@@ -199,7 +199,7 @@ ggk$add_track(binnedTrack2, 1e5)
 ggk$plot_full()
 
 # Plot ideogram with two profile tracks on opposite sides
-ggk = ggkaryo("giemsa.bed", opposite=T)
+ggk = ggkaryo(data('giemsa', package='ggkaryo'), opposite=T)
 binnedTrack2 = copy(binnedTrack)
 binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
 ggk$add_track(binnedTrack, 1e5)
@@ -207,12 +207,12 @@ ggk$add_track(binnedTrack2, 1e5)
 ggk$plot_full()
 
 # Plot ideogram with two profile tracks on opposite sides and central lois
-ggk = ggkaryo("giemsa.bed")
+ggk = ggkaryo(data('giemsa', package='ggkaryo'))
 binnedTrack2 = copy(binnedTrack)
 binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
 ggk$add_track(binnedTrack, 1e5)
 ggk$add_track(binnedTrack2, 1e5)
-loiData = readRDS("lois_test.rds")
+loiData = data('lois', package='ggkaryo')
 ggk$add_lois(loiData, "center", "sample")
 ggk$plot_full()
 

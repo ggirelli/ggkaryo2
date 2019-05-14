@@ -1,5 +1,5 @@
 Package: ggkaryo
-Title: Overlay karyotype and data-track profiles in a ggplot-compatible manner.
+Title: Overlay karyotype and data-track profiles in a ggplot-compatible manner
 Version: 0.0.0.9000
 Authors@R: person("Gabriele", "Girelli", email = "gigi.ga90@gmail.com", role = c("aut", "cre"))
 Description: ggkaryo is fully based on ggplot. It allows to plot a simple
@@ -22,5 +22,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1.9000
 Suggests: 
-    knitr
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr
