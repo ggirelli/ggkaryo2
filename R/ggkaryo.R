@@ -208,6 +208,40 @@ ggkaryo <- setRefClass("ggkaryo",
       NULL
     },
 
+    bin_track = function(track, size, step, method="within",
+      fun.aggreg=mean, ...) {
+      "Bins a track based on provided bin size and step.
+      "
+      stopifnot(is(track, "data.table"))
+      stopifnot(ncol(track) >= 5)
+      stopifnot(method %in% c("within", "overlap"))
+      track = track[, 1:5]
+      colnames(track) = c("chrom", "start", "end", "name", "value")
+      track[, chromID := unlist(lapply(chrom, .self$chrom2id))]
+
+      mk_bins = function(chrom_data, size, step) {
+        end = max(chrom_data$end, na.rm = T)
+        starts = seq(0, end-step, by=step)
+        data.table(start = starts, end = starts+size, value = 0)
+      }
+      select_overlap = function(data, start, end)
+        data$start > start | data$end <= end
+      select_within = function(data, start, end)
+        data$start > start & data$end <= end
+      bin_chrom = function(chrom_data, size, step, method,
+        fun.aggreg=mean, ...) {
+        select_regions = ifelse("within"==method, select_within, select_overlap)
+        chrom_data = chrom_data[order(start)]
+        bins = mk_bins(chrom_data, size, step)
+        for ( bi in 1:nrow(bins) ) {
+          ri = which(select_regions(chrom_data, bins[bi, start], bins[bi, end]))
+          bins[bi, value := fun.aggreg(chrom_data[ri, value], ...)]
+        }
+        return(bins)
+      }
+      track[, bin_chrom(.SD, size, step, method, fun.aggreg, na.rm=T),
+        by=c("chrom", "chromID")]
+    },
     add_track = function(track, step,
       position = "auto", color = "auto", alpha = .5) {
       "Adds a profile to the current ggkaryo plot. The input track must have
@@ -267,15 +301,14 @@ ggkaryo <- setRefClass("ggkaryo",
       }
       track = track[, set_gaps_to_zero(.SD, step), by = chrom]
 
-      track = do.call(rbind, by(track, track$chrom, FUN = function(ct) {
-        pre = ct[1,]
-        pre$value = NA
-        pre$norm = 0
-        pos = ct[nrow(ct),]
-        pos$value = NA
-        pos$norm = 0
-        do.call(rbind, list(pre, ct, pos))
-      }))
+      add_chrom_ends = function(chrom_data) {
+        pre = chrom_data[1,]
+        pre$value = NA; pre$norm = 0
+        pos = chrom_data[nrow(chrom_data),]
+        pos$value = NA; pos$norm = 0
+        do.call(rbind, list(pre, chrom_data, pos))
+      }
+      track = track[, add_chrom_ends(.SD), by=chrom]
 
       nTracks = length(.self$data[['tracks']])
       .self$data[['tracks']][[nTracks+1]] = list(
@@ -305,15 +338,17 @@ ggkaryo <- setRefClass("ggkaryo",
       p = .self$data[['plot']]
 
       nTracks = length(.self$data[['tracks']])
-      for ( trackID in 1:nTracks ) {
-        track = .self$data[['tracks']][[trackID]]$data
-        track[, x := .self$chromID2x(chromID)+.self$chrom_width+norm]
-        track[, y := start+(end-start)/2]
-        p = p + geom_path(data = as.data.frame(track),
-          aes(group = chrom), color = "red")
+      if ( 0 != nTracks ) {
+        for ( trackID in 1:nTracks ) {
+          track = .self$data[['tracks']][[trackID]]$data
+          track[, x := .self$chromID2x(chromID)+.self$chrom_width+norm]
+          track[, y := start+(end-start)/2]
+          p = p + geom_path(data = as.data.frame(track),
+            aes(group = chrom), color = "red")
+        }
       }
 
-      print(p+xlim(0,5))
+      print(p)
     }
   )
 )
@@ -331,12 +366,13 @@ ggk$add_chrom_labels()
 # Add profile
 trackData = as.data.table(readRDS("track_test.rds"
   ))[!is.na(value), .(chrom, start, end, name=paste0("bin_", 1:.N), value)]
-ggk$add_track(trackData, 499500, "right")
+binnedTrack = ggk$bin_track(trackData, 1e6, 1e5, na.rm=T)
+ggk$add_track(binnedTrack, 1e5, "right")
 
 # Add loci of interest
 # ggk$add_lois(loiData, "right", "sample")
 
 # Show plot
-#ggk$plot()
+ggk$plot()
 
 #ggk
