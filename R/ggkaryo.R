@@ -4,15 +4,26 @@
 #' The \\code{ggkaryo} class allows to plot (labeled) ideograms and to overlay
 #' them with data track profiles and also highlight loci of interes (lois).
 #'
-#' @name ggkaryo
+#' @import methods
 #' @export ggkaryo
 #' @exportClass ggkaryo
 #'
+#' @importFrom ggplot2 ggplot
+#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 geom_polygon
+#' @importFrom ggplot2 scale_fill_manual
+#' @importFrom ggplot2 theme
+#' @importFrom ggplot2 element_blank
+#' @importFrom ggplot2 guides
+#' @importFrom ggplot2 geom_segment
+#' @importFrom ggplot2 aes_string
+#' @importFrom ggplot2 scale_color_brewer
+#' @importFrom ggplot2 guide_legend
 #' @import cowplot
 #' @import data.table
-#' @import ggplot2
+#' @import methods
 #' @import RColorBrewer
-#' 
+#'
 #' @field n_chrom (numerical) number of chromosomes, default: 24
 #' @field hetero (character) heterosome labels (without "chr"),
 #'        default: c("X", "Y")
@@ -29,12 +40,12 @@
 #'
 #' @examples
 #' require(data.table)
-#' require(ggkaryo)
+#' require(ggkaryo2)
 #'
 #' # Load example data
-#' data('giemsa', package='ggkaryo')
-#' data('track', package='ggkaryo')
-#' data('lois', package='ggkaryo')
+#' data('giemsa', package='ggkaryo2')
+#' data('track', package='ggkaryo2')
+#' data('lois', package='ggkaryo2')
 #'
 #' # Plot ideogram
 #' ggk = ggkaryo(giemsa)
@@ -61,7 +72,7 @@
 #' ggk$plot_full()
 #'
 #' # Plot ideogram with two profile tracks on opposite sides
-#' ggk = ggkaryo(giemsa, opposite=T)
+#' ggk = ggkaryo(giemsa, opposite=TRUE)
 #' binnedTrack2 = copy(binnedTrack)
 #' binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
 #' ggk$add_track(binnedTrack, 1e5)
@@ -103,7 +114,7 @@ ggkaryo <- setRefClass("ggkaryo",
         giemsa_levels=c(
           "gneg", "gpos25", "gpos50", "gpos75", "gpos100",
           "acen", "gvar", "stalk"),
-        opposite=F
+        opposite=FALSE
       ) {
       "Initializer method. See \\code{ggkaryo} description for more details"
       stopifnot(length(giemsa_levels) == length(giemsa_palette))
@@ -124,11 +135,11 @@ ggkaryo <- setRefClass("ggkaryo",
 
     chrom2id = function(chrom) {
       "Converts a chromosome signature (seqname) to a numerical id.
-      \\arguments{
+      \\describe{
         {\\code{chrom}}{
           (string) chromosome signature (e.g., 'chr1' or '1')}
       }
-      \\value{returns numeric: chromosome numerical ID}"
+      \\describe{returns numeric: chromosome numerical ID}"
       if ( grepl("^chr", chrom) ) chrom = gsub("^chr", "", chrom)
       if ( grepl(":", chrom) ) {
         return(floor(as.numeric(gsub(":", ".", chrom))))
@@ -142,22 +153,22 @@ ggkaryo <- setRefClass("ggkaryo",
     },
     chromID2x = function(chromID) {
       "Retrieve the position of a chromosome on the X axis.
-      \\arguments{
+      \\describe{
         {\\code{chromID}}{(numeric)}
       }
-      \\value{returns numeric: chromosome position on the X axis}"
+      \\describe{returns numeric: chromosome position on the X axis}"
       return((chromID-1)*(.self$chrom_width + .self$chrom_padding))
     },
     norm2x = function(chromID, norm, position) {
       "Converts normalized score to X coordinate in the ggkaryo plot.
-      \\arguments{
+      \\describe{
         {\\code{chromID}}{(numeric)}
 
         {\\code{norm}}{(numeric) normalized score}
 
         {\\code{position}}{(character) 'left' or 'right'}
       }
-      \\value{returns numeric: normalized score X coordinate}"
+      \\describe{returns numeric: normalized score X coordinate}"
       padding = .self$chrom_padding
       if ( .self$opposite )
         padding = padding / 2
@@ -171,11 +182,11 @@ ggkaryo <- setRefClass("ggkaryo",
 
     read_giemsa = function(giemsa) {
       "Reads a Giemsa bed file. Adds chromID, bandID, and X columns.
-      \\arguments{
+      \\describe{
         {\\code{giemsa}}{(character) path to giemsa BED5+ file}
         {\\code{giemsa}}{(data.table) data table with giemsa BED5+ data}
       }
-      \\value{returns data.table: adjusted giemsa data.table}"
+      \\describe{returns data.table: adjusted giemsa data.table}"
       if ( is(giemsa, "character") ) {
         stopifnot(file.exists(giemsa))
         giemsa = fread(giemsa)
@@ -301,11 +312,11 @@ ggkaryo <- setRefClass("ggkaryo",
     prep4karyo = function(giemsa) {
       "Builds a data.table to plot the ideograms and (optionally) boxes around
       each chromosome arm.
-      \\arguments{
+      \\describe{
         {\\code{giemsa}}{(character) path to giemsa BED5+ file}
         {\\code{giemsa}}{(data.table) data table with giemsa BED5+ data}
       }
-      \\value{returns data.table: adjusted giemsa data.table}"
+      \\describe{returns data.table: adjusted giemsa data.table}"
       .self$data[["giemsa"]] = .self$read_giemsa(giemsa)
       .self$prep4bands()
       .self$prep4boxes()
@@ -317,7 +328,7 @@ ggkaryo <- setRefClass("ggkaryo",
     get_color = function(color, trackID) {
       "Extracts, in order, track colors from the ggk$track_palette_name.
       See RColorBrewer for more details.
-      \\arguments{
+      \\describe{
         {\\code{color}}{(character) a color or 'auto'}
         {\\code{trackID}}{(numeric) track number}
       }"
@@ -330,7 +341,7 @@ ggkaryo <- setRefClass("ggkaryo",
     get_next_position = function(position) {
       "Selects position for the next track in such a fashion to balance out
       left/right sides of the ideograms.
-      \\arguments{
+      \\describe{
         {\\code{position}}{(character) 'right', 'left', or 'auto'}
       }"
       stopifnot(position %in% c("auto", "right", "left"))
@@ -364,7 +375,7 @@ ggkaryo <- setRefClass("ggkaryo",
       "Bins a track based on provided bin size and step.
       Regions from the track are assigned to the bins when they are completely
       include ('within' method) or overlap even partially ('overlap' method).
-      \\arguments{
+      \\describe{
         {\\code{track}}{(data.table) BED5+ track data table}
 
         {\\code{size}}{(numeric) bin size in nt}
@@ -377,7 +388,7 @@ ggkaryo <- setRefClass("ggkaryo",
 
         {\\code{...}}{(mixed) additional parameters to pass to fun.aggreg}
       }
-      \\value{returns data.table: binned track}"
+      \\describe{returns data.table: binned track}"
       stopifnot(isdata.table(track))
       stopifnot(ncol(track) >= 5)
       stopifnot(method %in% c("within", "overlap"))
@@ -417,7 +428,7 @@ ggkaryo <- setRefClass("ggkaryo",
       already been binned with a consistent step. A consistent step is needed
       to automatically set any gap to 0 in the profile.
       Builds .self$data[['tracks']].
-      \\arguments {
+      \\describe{
         {\\code{track}}{(character) path to BED5+ file}
         {\\code{track}}{(data.table) BED5+ data table}
 
@@ -499,7 +510,7 @@ ggkaryo <- setRefClass("ggkaryo",
     add_lois = function(loiData, position, colorName, alpha = 1) {
       "Adds details on Loci Of Interest (loi) to the current ggkaryo plot.
       Builds .self$data[['lois']].
-      \\arguments {
+      \\describe{
         {\\code{loiData}}{(character) path to BED5+ loi file}
         {\\code{loiData}}{(data.table) data.table with BED5+ loi data}
         {\\code{position}}{(character) either 'left', 'right' or 'center'}
@@ -545,7 +556,7 @@ ggkaryo <- setRefClass("ggkaryo",
     },
     add_lois_overlay = function(p) {
       "Overlays track profiles to a ggkaryo plot.
-      \\arguments{
+      \\describe{
         {\\code{p}}{(ggplot)}
       }"
       if ( 0 != length(.self$data[['lois']]) ) {
@@ -581,7 +592,7 @@ ggkaryo <- setRefClass("ggkaryo",
     },
     add_track_overlay = function(p) {
       "Overlays track profiles to a ggkaryo plot.
-      \\arguments{
+      \\describe{
         {\\code{p}}{(ggplot)}
       }"
       nTracks = length(.self$data[['tracks']])

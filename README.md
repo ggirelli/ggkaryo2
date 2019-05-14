@@ -1,4 +1,4 @@
-ggkaryo
+ggkaryo2
 ===
 
 An R package to overlay karyotype and data-track profiles in a `ggplot`-compatible manner.
@@ -10,26 +10,26 @@ To **install**, run the following:
 
 ```R
 require("devtools")
-devtools::install_github("ggirelli/ggkaryo")
+devtools::install_github("ggirelli/ggkaryo2")
 ```
 
 To **uninstall** run the following from within the repository folder:
 
 ```R
-remove.packages("ggkaryo")
+remove.packages("ggkaryo2")
 ```
 
 Usage
 ----------
 
 ```R
-require(ggkaryo)
+require(ggkaryo2)
 require(data.table)
 
 # Load example data
-data('giemsa', package='ggkaryo')
-data('track', package='ggkaryo')
-data('lois', package='ggkaryo')
+data('giemsa', package='ggkaryo2')
+data('track', package='ggkaryo2')
+data('lois', package='ggkaryo2')
 
 # Plot ideogram
 ggk = ggkaryo(giemsa)
@@ -77,7 +77,7 @@ ggk$plot_full()
 Contributing
 ---
 
-We welcome any contributions to `ggkaryo`. Please, refer to the [contribution guidelines](https://github.com/ggirelli/ggkaryo/blob/master/CONTRIBUTING.md) if this is your first time contributing! Also, check out our [code of conduct](https://github.com/ggirelli/ggkaryo/blob/master/CODE_OF_CONDUCT.md).
+We welcome any contributions to `ggkaryo2`. Please, refer to the [contribution guidelines](https://github.com/ggirelli/ggkaryo2/blob/master/CONTRIBUTING.md) if this is your first time contributing! Also, check out our [code of conduct](https://github.com/ggirelli/ggkaryo2/blob/master/CODE_OF_CONDUCT.md).
 
 License
 ---
