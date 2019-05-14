@@ -211,7 +211,14 @@ ggkaryo <- setRefClass("ggkaryo",
     bin_track = function(track, size, step, method="within",
       fun.aggreg=mean, ...) {
       "Bins a track based on provided bin size and step.
-      "
+      Regions from the track are assigned to the bins when they are completely
+      include ('within' method) or overlap even partially ('overlap' method).
+      @param track (data.table) BED5+ track data table
+      @param size (numeric) bin size in nt
+      @param step (numeric) bin step in nt
+      @param method (string) either 'within' or 'overlap'
+      @param fun.aggreg (function) how to aggregate values in bins
+      @param ... (mixed) additional parameters to pass to fun.aggreg"
       stopifnot(is(track, "data.table"))
       stopifnot(ncol(track) >= 5)
       stopifnot(method %in% c("within", "overlap"))
@@ -220,6 +227,7 @@ ggkaryo <- setRefClass("ggkaryo",
       track[, chromID := unlist(lapply(chrom, .self$chrom2id))]
 
       mk_bins = function(chrom_data, size, step) {
+        "Generates a list of bins of given size and step."
         end = max(chrom_data$end, na.rm = T)
         starts = seq(0, end-step, by=step)
         data.table(start = starts, end = starts+size, value = 0)
@@ -230,6 +238,7 @@ ggkaryo <- setRefClass("ggkaryo",
         data$start > start & data$end <= end
       bin_chrom = function(chrom_data, size, step, method,
         fun.aggreg=mean, ...) {
+        "Bin chromosome data using given size and step."
         select_regions = ifelse("within"==method, select_within, select_overlap)
         chrom_data = chrom_data[order(start)]
         bins = mk_bins(chrom_data, size, step)
@@ -240,7 +249,8 @@ ggkaryo <- setRefClass("ggkaryo",
         return(bins)
       }
       track[, bin_chrom(.SD, size, step, method, fun.aggreg, na.rm=T),
-        by=c("chrom", "chromID")]
+        by=c("chrom", "chromID")][,
+        .(chrom, start, end, paste0("bin_", 1:.N), value)]
     },
     add_track = function(track, step,
       position = "auto", color = "auto", alpha = .5) {
@@ -264,6 +274,7 @@ ggkaryo <- setRefClass("ggkaryo",
       track = track[, 1:5]
       colnames(track) = c("chrom", "start", "end", "name", "value")
       track[, chromID := unlist(lapply(chrom, .self$chrom2id))]
+      track = track[is.na(value), value := 0]
 
       track = track[order(start)]
       track = track[order(chromID)]
@@ -275,8 +286,9 @@ ggkaryo <- setRefClass("ggkaryo",
       stopifnot(all(track[, .(v=unique(diff(start))), by=chrom]$v == step))
 
       set_gaps_to_zero = function(chrom_data, step) {
+        "Adds 0s where gaps are detected in the track."
         id = which(diff(chrom_data$start) != step)
-        stopifnot( 0 == length(id) || id == 1 )
+        if ( 0 == length(id) ) return(chrom_data)
         
         basepoints = chrom_data[c(id[1], id[1]+1),]
         basepoints[, norm := 0]
@@ -302,6 +314,7 @@ ggkaryo <- setRefClass("ggkaryo",
       track = track[, set_gaps_to_zero(.SD, step), by = chrom]
 
       add_chrom_ends = function(chrom_data) {
+        "Sets the chromosome ends to 0."
         pre = chrom_data[1,]
         pre$value = NA; pre$norm = 0
         pos = chrom_data[nrow(chrom_data),]
@@ -344,7 +357,7 @@ ggkaryo <- setRefClass("ggkaryo",
           track[, x := .self$chromID2x(chromID)+.self$chrom_width+norm]
           track[, y := start+(end-start)/2]
           p = p + geom_path(data = as.data.frame(track),
-            aes(group = chrom), color = "red")
+            aes(group = chrom), fill = "red")
         }
       }
 
