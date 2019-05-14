@@ -1,6 +1,6 @@
 Package: ggkaryo2
 Title: Overlay karyotype and data-track profiles in a ggplot-compatible manner
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: person("Gabriele", "Girelli", email = "gigi.ga90@gmail.com", role = c("aut", "cre"))
 Author: Gabriele Girelli [aut, cre]
 Maintainer: Gabriele Girelli <gigi.ga90@gmail.com>
