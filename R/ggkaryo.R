@@ -28,6 +28,9 @@
 #' @field data (list) contains ggkaryo data for plotting
 #'
 #' @examples
+#' require(data.table)
+#' require(ggkaryo)
+#'
 #' # Load example data
 #' data('giemsa', package='ggkaryo')
 #' data('track', package='ggkaryo')

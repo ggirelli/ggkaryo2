@@ -24,6 +24,7 @@ Usage
 
 ```R
 require(ggkaryo)
+require(data.table)
 
 # Load example data
 data('giemsa', package='ggkaryo')
