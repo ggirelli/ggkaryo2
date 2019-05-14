@@ -28,6 +28,16 @@ to automatically set any gap to 0 in the profile.
 @param color (string) either 'auto' or a color string.
 @param alpha (numerical) opacity level.}
 
+\item{\code{bin_track(track, size, step, method = "within", fun.aggreg = mean, ...)}}{Bins a track based on provided bin size and step.
+Regions from the track are assigned to the bins when they are completely
+include ('within' method) or overlap even partially ('overlap' method).
+@param track (data.table) BED5+ track data table
+@param size (numeric) bin size in nt
+@param step (numeric) bin step in nt
+@param method (string) either 'within' or 'overlap'
+@param fun.aggreg (function) how to aggregate values in bins
+@param ... (mixed) additional parameters to pass to fun.aggreg}
+
 \item{\code{chrom2id(chrom)}}{Converts a chromosome signature (seqname) to a numerical id.
 @param chrom (string) chromosome signature (e.g., 'chr1' or '1')
 @returns numeric: chromosome numerical ID}
@@ -36,14 +46,22 @@ to automatically set any gap to 0 in the profile.
 @param chromID (numeric)
 @returns numeric: chromosome position on the X axis}
 
+\item{\code{get_color(color, trackID)}}{Extracts, in order, track colors from the ggk$track_palette_name.
+See RColorBrewer for more details.}
+
+\item{\code{get_next_position(position)}}{Selects position for the next track in such a fashion to balance out
+left/right sides of the ideograms.}
+
 \item{\code{initialize(giemsa, ..., n_chrom = 24, hetero = c("X", "Y"),
-  chrom_width = 1, chrom_padding = 5, giemsa_palette = c("#DDDDDD",
-  "#9A9A9A", "#787878", "#555555", "#333333", "#FF0000", "#C4FFFC", "#AFE6FF"),
-  giemsa_levels = c("gneg", "gpos25", "gpos50", "gpos75", "gpos100", "acen",
-  "gvar", "stalk"), opposite = F)}}{@param giemsa (character) path to Giemsa BED5+ file.
+  chrom_width = 1, chrom_padding = 5, track_palette_name = "Paired",
+  giemsa_palette = c("#DDDDDD", "#9A9A9A", "#787878", "#555555", "#333333",
+  "#FF0000", "#C4FFFC", "#AFE6FF"), giemsa_levels = c("gneg", "gpos25",
+  "gpos50", "gpos75", "gpos100", "acen", "gvar", "stalk"), opposite = F)}}{@param giemsa (character) path to Giemsa BED5+ file.
 @param giemsa (data.table) data table with Giemsa BED5+ file info.}
 
-\item{\code{plot()}}{Plots the current ggkaryo object.}
+\item{\code{plot_base()}}{Plots the current ggkaryo object (only basic layers).}
+
+\item{\code{plot_full()}}{Plots the current ggkaryo object with tracks and lois.}
 
 \item{\code{prep4bands()}}{Prepares data for plotting chromosome bands.
 Builds .self$data[['bands']] object.}
