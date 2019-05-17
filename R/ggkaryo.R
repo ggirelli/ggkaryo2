@@ -382,7 +382,7 @@ ggkaryo <- setRefClass("ggkaryo",
         \\item{\\code{...}}{(mixed) additional parameters to pass to fun.aggreg}
       }
       \\describe{\\item{returns}{data.table: binned track}}"
-      stopifnot(isdata.table(track))
+      stopifnot(is.data.table(track))
       stopifnot(ncol(track) >= 5)
       stopifnot(method %in% c("within", "overlap"))
       track = track[, 1:5]
