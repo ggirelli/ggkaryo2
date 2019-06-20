@@ -330,6 +330,13 @@ ggkaryo <- setRefClass("ggkaryo",
       stopifnot("bands" %in% names(.self$data))
       stopifnot(is.data.table(.self$data[['bands']]))
 
+      if ( .self$opposite ) {
+        xlim = c(-.self$chrom_padding/2,
+          .self$data[['bands']][, max(x)]+.self$chrom_padding/2)
+      } else {
+        xlim = c(0, .self$data[['bands']][, max(x)]+.self$chrom_padding)
+      }
+
       .self$data$plot$baseLayer = ggplot(.self$data[['bands']], aes(x=x, y=-y)
         ) + geom_polygon(aes(fill=value, group=bandID)
         ) + scale_fill_manual(values=.self$giemsa_palette
@@ -342,7 +349,9 @@ ggkaryo <- setRefClass("ggkaryo",
           legend.box.margin = margin(5, 5, 5, 5),
           legend.title = element_text(face = "bold")
         ) + guides(fill = F
-        ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6))
+        ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6)
+        ) + xlim(xlim
+        )
       if ( .self$show_giemsa_guide ) {
         .self$data$plot$baseLayer = .self$data$plot$baseLayer + guides(
             fill = guide_legend(title = "Giemsa", nrow = 1))
@@ -361,7 +370,9 @@ ggkaryo <- setRefClass("ggkaryo",
           legend.margin = margin(10, 10, 10, 10),
           legend.box.margin = margin(5, 5, 5, 5),
           legend.title = element_text(face = "bold")
-        ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6))
+        ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6)
+        ) + xlim(xlim
+        )
       if ( .self$show_tracks_guide ) {
         .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(
             fill = guide_legend(title = "Tracks", nrow = 1),
