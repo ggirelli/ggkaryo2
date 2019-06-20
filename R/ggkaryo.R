@@ -331,10 +331,11 @@ ggkaryo <- setRefClass("ggkaryo",
       stopifnot(is.data.table(.self$data[['bands']]))
 
       if ( .self$opposite ) {
-        xlim = c(-.self$chrom_padding/2,
+        xlim = c(.self$data[['bands']][, min(x)]-.self$chrom_padding/2,
           .self$data[['bands']][, max(x)]+.self$chrom_padding/2)
       } else {
-        xlim = c(0, .self$data[['bands']][, max(x)]+.self$chrom_padding)
+        xlim = c(.self$data[['bands']][, min(x)],
+          .self$data[['bands']][, max(x)]+.self$chrom_padding)
       }
 
       .self$data$plot$baseLayer = ggplot(.self$data[['bands']], aes(x=x, y=-y)
