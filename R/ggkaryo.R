@@ -331,10 +331,10 @@ ggkaryo <- setRefClass("ggkaryo",
       stopifnot(is.data.table(.self$data[['bands']]))
 
       if ( .self$opposite ) {
-        xlim = c(.self$data[['bands']][, min(x)]-.self$chrom_width-.self$chrom_padding/2,
+        xlim = c(.self$data[['bands']][, min(x)]-.self$chrom_padding/2,
           .self$data[['bands']][, max(x)]+.self$chrom_padding/2)
       } else {
-        xlim = c(.self$data[['bands']][, min(x)]-.self$chrom_width,
+        xlim = c(.self$data[['bands']][, min(x)],
           .self$data[['bands']][, max(x)]+.self$chrom_padding)
       }
 
