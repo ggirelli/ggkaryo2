@@ -1,6 +1,8 @@
 ggkaryo2
 ===
 
+[![DOI](https://zenodo.org/badge/185577333.svg)](https://zenodo.org/badge/latestdoi/185577333)
+
 An R package to overlay karyotype and data-track profiles in a `ggplot`-compatible manner.
 
 Installation
