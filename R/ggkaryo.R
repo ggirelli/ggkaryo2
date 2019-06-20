@@ -53,47 +53,57 @@
 #' data('giemsa', package='ggkaryo2')
 #' data('track', package='ggkaryo2')
 #' data('lois', package='ggkaryo2')
-#'
+#' 
 #' # Plot ideogram
 #' ggk = ggkaryo(giemsa)
 #' ggk$plot_full()
-#'
+#' 
 #' # Plot ideogram with boxes around chromosome arms and labels
-#' ggk = ggkaryo(giemsa)
-#' ggk$add_arm_boxes()
-#' ggk$add_chrom_labels()
+#' ggk = ggkaryo(giemsa, show_arm_boxes=T, show_chrom_labels=T)
 #' ggk$plot_full()
-#'
+#' 
 #' # Plot ideogram with one profile track
 #' ggk = ggkaryo(giemsa)
 #' binnedTrack = track
-#' ggk$add_track(binnedTrack, 1e5)
+#' ggk$add_track("track", binnedTrack, 1e5)
 #' ggk$plot_full()
-#'
+#' 
 #' # Plot ideogram with two profile tracks on the same side
 #' ggk = ggkaryo(giemsa)
 #' binnedTrack2 = copy(binnedTrack)
 #' binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
-#' ggk$add_track(binnedTrack, 1e5)
-#' ggk$add_track(binnedTrack2, 1e5)
+#' ggk$add_track("track 1", binnedTrack, 1e5)
+#' ggk$add_track("track 2", binnedTrack2, 1e5)
 #' ggk$plot_full()
-#'
+#' 
 #' # Plot ideogram with two profile tracks on opposite sides
 #' ggk = ggkaryo(giemsa, opposite=TRUE)
 #' binnedTrack2 = copy(binnedTrack)
 #' binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
-#' ggk$add_track(binnedTrack, 1e5)
-#' ggk$add_track(binnedTrack2, 1e5)
+#' ggk$add_track("track 1", binnedTrack, 1e5)
+#' ggk$add_track("track 2", binnedTrack2, 1e5)
 #' ggk$plot_full()
-#'
+#' 
 #' # Plot ideogram with two profile tracks on opposite sides and central lois
 #' ggk = ggkaryo(giemsa)
 #' binnedTrack2 = copy(binnedTrack)
 #' binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
-#' ggk$add_track(binnedTrack, 1e5)
-#' ggk$add_track(binnedTrack2, 1e5)
+#' ggk$add_track("track 1", binnedTrack, 1e5)
+#' ggk$add_track("track 2", binnedTrack2, 1e5)
 #' loiData = lois
-#' ggk$add_lois(loiData, "center", "sample")
+#' ggk$add_lois("Sample type", loiData, "center", "sample")
+#' ggk$plot_full()
+#' 
+#' # Plot ideogram with two profile tracks on opposite sides and central lois
+#' # Showing all legends
+#' ggk = ggkaryo(giemsa, show_arm_boxes=T, show_chrom_labels=T,
+#'   show_giemsa_guide = T, show_tracks_guide = T)
+#' binnedTrack2 = copy(binnedTrack)
+#' binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
+#' ggk$add_track("track 1", binnedTrack, 1e5)
+#' ggk$add_track("track 2", binnedTrack2, 1e5)
+#' loiData = lois
+#' ggk$add_lois("Sample type", loiData, "center", "sample")
 #' ggk$plot_full()
 #'
 
@@ -127,9 +137,9 @@ ggkaryo <- setRefClass("ggkaryo",
           "acen", "gvar", "stalk"),
         opposite=FALSE,
         show_giemsa_guide = F,
-        show_tracks_guide = T,
-        show_arm_boxes = T,
-        show_chrom_labels = T
+        show_tracks_guide = F,
+        show_arm_boxes = F,
+        show_chrom_labels = F
       ) {
       "Initializer method. See \\code{ggkaryo} description for more details"
       stopifnot(length(giemsa_levels) == length(giemsa_palette))
@@ -354,10 +364,13 @@ ggkaryo <- setRefClass("ggkaryo",
         ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6))
       if ( .self$show_tracks_guide ) {
         .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(
-            fill = guide_legend(title = "Tracks", nrow = 1))
+            fill = guide_legend(title = "Tracks", nrow = 1),
+            color = guide_legend(nrow = 1)
+          )
       } else {
-        .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(fill = F
-          ) + theme(plot.margin = grid::unit(c(59.5, 0, 0, 0), "points"),)
+        .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(
+            fill = F, color = F
+          ) + theme(plot.margin = grid::unit(c(59.5, 0, 0, 0), "points"))
       }
 
       if ( !.self$show_giemsa_guide & !.self$show_tracks_guide ) {
@@ -641,7 +654,19 @@ ggkaryo <- setRefClass("ggkaryo",
               data=lois$data, aes(xend=xend, yend=-y
             ) + aes_string(color=lois$color), alpha=lois$alpha
           ) + scale_color_brewer(palette=.self$lois_palette_name
-          ) + guides(color = guide_legend(title = lois$name))
+          )
+        if ( .self$show_tracks_guide ) {
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(
+            color = guide_legend(title = lois$name))
+        }
+      } else {
+        if ( .self$show_giemsa_guide ) {
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(color = F
+            ) + theme(plot.margin = grid::unit(c(59.5, 0, 0, 0), "points"),)
+        } else {
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(color = F
+            ) + theme(plot.margin = grid::unit(c(0, 0, 0, 0), "points"),)
+        }
       }
     },
     add_track_overlay = function() {
@@ -657,16 +682,24 @@ ggkaryo <- setRefClass("ggkaryo",
             aes(group = chrom, fill = trackname),
             alpha = track$alpha)
         }
-      }
-      if ( .self$show_tracks_guide ) {
-        colorList = unlist(lapply(1:length(.self$data$tracks), function(i) {
-          .self$get_color(.self$data$tracks[[i]]$color, i) }))
-        nameList = unlist(lapply(.self$data$tracks, function(x) x$name))
-        .self$data$plot$trackLayer = .self$data$plot$trackLayer + scale_fill_manual(
-            values = colorList, labels = nameList
-          )
+        if ( .self$show_tracks_guide ) {
+          colorList = unlist(lapply(1:length(.self$data$tracks), function(i) {
+            .self$get_color(.self$data$tracks[[i]]$color, i) }))
+          nameList = unlist(lapply(.self$data$tracks, function(x) x$name))
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + scale_fill_manual(
+              values = colorList, labels = nameList
+            )
+        } else {
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(fill = F)
+        }
       } else {
-        .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(fill = F)
+        if ( .self$show_giemsa_guide ) {
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(fill = F
+            ) + theme(plot.margin = grid::unit(c(59.5, 0, 0, 0), "points"),)
+        } else {
+          .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(fill = F
+            ) + theme(plot.margin = grid::unit(c(0, 0, 0, 0), "points"),)
+        }
       }
     },
     prep4fullplot = function() {
@@ -677,8 +710,9 @@ ggkaryo <- setRefClass("ggkaryo",
       if ( .self$show_arm_boxes ) .self$add_arm_boxes()
       if ( .self$show_chrom_labels ) .self$add_chrom_labels()
     },
-    plot_full = function() {
+    plot_full = function(doPrep = T) {
       "Plots the current ggkaryo object with tracks and lois."
+      if ( doPrep ) .self$prep4fullplot()
       theme_set(theme_cowplot())
       p1 = as.grob(.self$data$plot$baseLayer)
       p2 = as.grob(.self$data$plot$trackLayer)
