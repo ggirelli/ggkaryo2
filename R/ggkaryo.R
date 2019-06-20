@@ -105,7 +105,10 @@ ggkaryo <- setRefClass("ggkaryo",
     giemsa_levels = "character",
     opposite = "logical",
     data = "list",
-    guides = "list"
+    show_giemsa_guide = "logical",
+    show_tracks_guide = "logical",
+    show_arm_boxes = "logical",
+    show_chrom_labels = "logical"
   ),
   method = list(
     initialize = function(giemsa, ...,
@@ -119,7 +122,10 @@ ggkaryo <- setRefClass("ggkaryo",
           "gneg", "gpos25", "gpos50", "gpos75", "gpos100",
           "acen", "gvar", "stalk"),
         opposite=FALSE,
-        giemsa_guide = F, tracks_guide = T
+        show_giemsa_guide = F,
+        show_tracks_guide = T,
+        show_arm_boxes = T,
+        show_chrom_labels = T
       ) {
       "Initializer method. See \\code{ggkaryo} description for more details"
       stopifnot(length(giemsa_levels) == length(giemsa_palette))
@@ -134,7 +140,11 @@ ggkaryo <- setRefClass("ggkaryo",
         giemsa_palette=giemsa_palette, giemsa_levels=giemsa_levels,
         opposite=opposite,
         data=list(tracks=list(), lois=list(), plot=list()),
-        guides=list(giemsa=giemsa_guide, tracks=tracks_guide))
+        show_giemsa_guide=show_giemsa_guide,
+        show_tracks_guide=show_tracks_guide,
+        show_arm_boxes=show_arm_boxes,
+        show_chrom_labels=show_chrom_labels
+      )
       names(.self$giemsa_palette) = giemsa_levels
 
       .self$prep4karyo(giemsa)
@@ -317,13 +327,14 @@ ggkaryo <- setRefClass("ggkaryo",
           legend.margin = margin(10, 10, 10, 10),
           legend.box.margin = margin(5, 5, 5, 5),
           legend.title = element_text(face = "bold")
-        ) + guides(fill = F)
-      if ( .self$guides$giemsa ) {
+        ) + guides(fill = F
+        ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6))
+      if ( .self$show_giemsa_guide ) {
         .self$data$plot$baseLayer = .self$data$plot$baseLayer + guides(
             fill = guide_legend(title = "Giemsa", nrow = 1))
       } else {
         .self$data$plot$baseLayer = .self$data$plot$baseLayer + guides(fill = F
-          ) + theme(plot.margin = grid::unit(c(60, 0, 0, 0), "points"))
+          ) + theme(plot.margin = grid::unit(c(59.5, 0, 0, 0), "points"))
       }
 
       .self$data$plot$trackLayer = ggplot(.self$data[['bands']], aes(x=x, y=-y)
@@ -336,16 +347,16 @@ ggkaryo <- setRefClass("ggkaryo",
           legend.margin = margin(10, 10, 10, 10),
           legend.box.margin = margin(5, 5, 5, 5),
           legend.title = element_text(face = "bold")
-        )
-      if ( .self$guides$tracks ) {
+        ) + ylim(c(-.self$data[['bands']][, max(y)], 5e6))
+      if ( .self$show_tracks_guide ) {
         .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(
-            fill = guide_legend(title = "", nrow = 1))
+            fill = guide_legend(title = "Tracks", nrow = 1))
       } else {
         .self$data$plot$trackLayer = .self$data$plot$trackLayer + guides(fill = F
-          ) + theme(plot.margin = grid::unit(c(60, 0, 0, 0), "points"),)
+          ) + theme(plot.margin = grid::unit(c(59.5, 0, 0, 0), "points"),)
       }
 
-      if ( !.self$guides$giemsa & !.self$guides$tracks ) {
+      if ( !.self$show_giemsa_guide & !.self$show_tracks_guide ) {
         .self$data$plot$baseLayer = .self$data$plot$baseLayer + theme(
           plot.margin = grid::unit(c(0, 0, 0, 0), "points"))
         .self$data$plot$trackLayer = .self$data$plot$trackLayer + theme(
@@ -545,10 +556,11 @@ ggkaryo <- setRefClass("ggkaryo",
         data = track, name = name, position = position, color = color, alpha = alpha)
     },
 
-    add_lois = function(loiData, position, colorName, alpha = 1) {
+    add_lois = function(name, loiData, position, colorName, alpha = 1) {
       "Adds details on Loci Of Interest (loi) to the current ggkaryo plot.
       Builds .self\\$data[['lois']].
       \\describe{
+        \\item{\\code{name}}{(character) loi track name for legend}
         \\item{\\code{loiData}}{(character) path to BED5+ loi file}
         \\item{\\code{loiData}}{(data.table) data.table with BED5+ loi data}
         \\item{\\code{position}}{(character) either 'left', 'right' or 'center'}
@@ -571,20 +583,22 @@ ggkaryo <- setRefClass("ggkaryo",
       loiData[is.na(value), value := 0]
       loiData[, colorName] = factor(unlist(loiData[, .SD, .SDcols=colorName]))
 
-      .self$data[['lois']] = list(data=loiData, position=position,
-        color=colorName, alpha=alpha)
+      .self$data[['lois']] = list(data=loiData, name = name,
+        position=position, color=colorName, alpha=alpha)
     },
 
     add_arm_boxes = function() {
       "Adds boxes around chromosome arms."
       .self$data$plot$trackLayer = .self$data$plot$trackLayer + geom_path(
-        data=ggk$data[['boxes']], aes(group=paste0(chrom, "_", arm_id)),
+        data=.self$data[['boxes']], aes(group=paste0(chrom, "_", arm_id)),
         color="black")
     },
     add_chrom_labels = function() {
       "Adds chromosome labels."
       .self$data$plot$baseLayer = .self$data$plot$baseLayer + geom_text(
-        data = .self$data[['chrom_labels']], aes(label = chrom), size = 5)
+          data = .self$data[['chrom_labels']], aes(label = chrom),
+          size = 5, angle = 45, hjust = 0.1, vjust = 0.5
+        )
     },
 
     plot_base = function() {
@@ -623,7 +637,7 @@ ggkaryo <- setRefClass("ggkaryo",
               data=lois$data, aes(xend=xend, yend=-y
             ) + aes_string(color=lois$color), alpha=lois$alpha
           ) + scale_color_brewer(palette=.self$lois_palette_name
-          ) + guides(color = guide_legend(title = lois$color))
+          ) + guides(color = guide_legend(title = lois$name))
       }
     },
     add_track_overlay = function() {
@@ -640,7 +654,7 @@ ggkaryo <- setRefClass("ggkaryo",
             alpha = track$alpha)
         }
       }
-      if ( .self$guides$tracks ) {
+      if ( .self$show_tracks_guide ) {
         colorList = unlist(lapply(1:length(.self$data$tracks), function(i) {
           .self$get_color(.self$data$tracks[[i]]$color, i) }))
         nameList = unlist(lapply(.self$data$tracks, function(x) x$name))
@@ -656,19 +670,20 @@ ggkaryo <- setRefClass("ggkaryo",
       .self$prep4plot()
       .self$add_lois_overlay()
       .self$add_track_overlay()
+      if ( .self$show_arm_boxes ) .self$add_arm_boxes()
+      if ( .self$show_chrom_labels ) .self$add_chrom_labels()
     },
     plot_full = function() {
       "Plots the current ggkaryo object with tracks and lois."
-      p1 = as.grob(ggk$data$plot$baseLayer)
-      p2 = as.grob(ggk$data$plot$trackLayer)
+      theme_set(theme_cowplot())
+      p1 = as.grob(.self$data$plot$baseLayer)
+      p2 = as.grob(.self$data$plot$trackLayer)
       p = grid.newpage()
       grid.draw(p1)
       vp = viewport(width=1, height=1, default.unit = "npc")
       pushViewport(vp)
       grid.draw(p2)
       upViewport()
-
-      return(vp)
     }
   )
 )
