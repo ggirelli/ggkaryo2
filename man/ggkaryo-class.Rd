@@ -43,9 +43,10 @@ color}
 
 \item{\code{add_chrom_labels()}}{Adds chromosome labels.}
 
-\item{\code{add_lois(loiData, position, colorName, alpha = 1)}}{Adds details on Loci Of Interest (loi) to the current ggkaryo plot.
+\item{\code{add_lois(name, loiData, position, colorName, alpha = 1)}}{Adds details on Loci Of Interest (loi) to the current ggkaryo plot.
 Builds .self\$data[['lois']].
 \describe{
+  \item{\code{name}}{(character) loi track name for legend}
   \item{\code{loiData}}{(character) path to BED5+ loi file}
   \item{\code{loiData}}{(data.table) data.table with BED5+ loi data}
   \item{\code{position}}{(character) either 'left', 'right' or 'center'}
@@ -53,16 +54,15 @@ Builds .self\$data[['lois']].
   \item{\code{alpha}}{(numeric) opacity level}
 }}
 
-\item{\code{add_lois_overlay(p)}}{Overlays track profiles to a ggkaryo plot.
-\describe{
-  \item{\code{p}}{(ggplot)}
-}}
+\item{\code{add_lois_overlay()}}{Overlays track profiles to a ggkaryo plot.}
 
-\item{\code{add_track(track, step, position = "auto", color = "auto", alpha = 0.5)}}{Adds a profile to the current ggkaryo plot. The input track must have
+\item{\code{add_track(name, track, step, position = "auto", color = "auto",
+  alpha = 0.5)}}{Adds a profile to the current ggkaryo plot. The input track must have
 already been binned with a consistent step. A consistent step is needed
 to automatically set any gap to 0 in the profile.
 Builds .self\$data[['tracks']].
 \describe{
+  \item{\code{name}}{(character) track name for legend}
   \item{\code{track}}{(character) path to BED5+ file}
   \item{\code{track}}{(data.table) BED5+ data table}
   \item{\code{step}}{(numerical) bin step in nt}
@@ -72,10 +72,7 @@ Builds .self\$data[['tracks']].
   \item{\code{alpha}}{(numerical) opacity level.}
 }}
 
-\item{\code{add_track_overlay(p)}}{Overlays track profiles to a ggkaryo plot.
-\describe{
-  \item{\code{p}}{(ggplot)}
-}}
+\item{\code{add_track_overlay()}}{Overlays track profiles to a ggkaryo plot.}
 
 \item{\code{bin_track(track, size, step, method = "within", fun.aggreg = mean, ...)}}{Bins a track based on provided bin size and step.
 Regions from the track are assigned to the bins when they are completely
@@ -121,7 +118,8 @@ left/right sides of the ideograms.
   lois_palette_name = "Dark2", giemsa_palette = c("#DDDDDD", "#9A9A9A",
   "#787878", "#555555", "#333333", "#FF0000", "#C4FFFC", "#AFE6FF"),
   giemsa_levels = c("gneg", "gpos25", "gpos50", "gpos75", "gpos100", "acen",
-  "gvar", "stalk"), opposite = FALSE)}}{Initializer method. See \code{ggkaryo} description for more details}
+  "gvar", "stalk"), opposite = FALSE, show_giemsa_guide = F,
+  show_tracks_guide = T, show_arm_boxes = T, show_chrom_labels = T)}}{Initializer method. See \code{ggkaryo} description for more details}
 
 \item{\code{norm2x(chromID, norm, position)}}{Converts normalized score to X coordinate in the ggkaryo plot.
 \describe{
@@ -141,6 +139,8 @@ Builds .self\$data[['bands']] object.}
 \item{\code{prep4boxes()}}{Prepares data for plotting chromosome arm boxes. Chromosome arms are
 identified based on the 'acen' bands that are used to divide each
 chromosomes in two arms. Builds .self\$data[['boxes']] object.}
+
+\item{\code{prep4fullplot()}}{Prepares to plot the full ggkaryo object.}
 
 \item{\code{prep4karyo(giemsa)}}{Builds a data.table to plot the ideograms and (optionally) boxes around
 each chromosome arm.

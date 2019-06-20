@@ -22,8 +22,12 @@
 #' @importFrom ggplot2 theme
 #' @importFrom ggplot2 theme_set
 #' @importFrom ggplotify as.grob
+#' @importFrom grid grid.newpage
+#' @importFrom grid grid.draw
+#' @importFrom grid viewport
+#' @importFrom grid pushViewport
+#' @importFrom grid upViewport
 #' @import data.table
-#' @import grid
 #' @import methods
 #' @import RColorBrewer
 #'
