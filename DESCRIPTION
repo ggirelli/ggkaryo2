@@ -20,6 +20,8 @@ Imports:
 	cowplot,
 	data.table,
 	ggplot2,
+	ggplotify,
+	grid,
 	methods,
 	RColorBrewer
 License: MIT + file LICENSE
