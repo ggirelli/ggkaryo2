@@ -540,7 +540,7 @@ ggkaryo <- setRefClass("ggkaryo",
 
     plot_base = function() {
       "Plots the current ggkaryo object (only basic layers)."
-      require(cowplot)
+      theme_set(theme_cowplot())
       print(.self$data[['plot']])
     },
     add_lois_overlay = function(p) {
@@ -602,7 +602,7 @@ ggkaryo <- setRefClass("ggkaryo",
       p = .self$data[['plot']]
       p = .self$add_lois_overlay(p)
       p = .self$add_track_overlay(p)
-      require(cowplot)
+      theme_set(theme_cowplot())
       print(p)
     }
   )
