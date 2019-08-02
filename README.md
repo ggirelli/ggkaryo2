@@ -26,54 +26,7 @@ Usage
 
 ```R
 require(ggkaryo2)
-require(data.table)
-
-# Load example data
-data('giemsa', package='ggkaryo2')
-data('track', package='ggkaryo2')
-data('lois', package='ggkaryo2')
-
-# Plot ideogram
-ggk = ggkaryo(giemsa)
-ggk$plot_full()
-
-# Plot ideogram with boxes around chromosome arms and labels
-ggk = ggkaryo(giemsa)
-ggk$add_arm_boxes()
-ggk$add_chrom_labels()
-ggk$plot_full()
-
-# Plot ideogram with one profile track
-ggk = ggkaryo(giemsa)
-binnedTrack = track
-ggk$add_track(binnedTrack, 1e5)
-ggk$plot_full()
-
-# Plot ideogram with two profile tracks on the same side
-ggk = ggkaryo(giemsa)
-binnedTrack2 = copy(binnedTrack)
-binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
-ggk$add_track(binnedTrack, 1e5)
-ggk$add_track(binnedTrack2, 1e5)
-ggk$plot_full()
-
-# Plot ideogram with two profile tracks on opposite sides
-ggk = ggkaryo(giemsa, opposite=T)
-binnedTrack2 = copy(binnedTrack)
-binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
-ggk$add_track(binnedTrack, 1e5)
-ggk$add_track(binnedTrack2, 1e5)
-ggk$plot_full()
-
-# Plot ideogram with two profile tracks on opposite sides and central lois
-ggk = ggkaryo(giemsa)
-binnedTrack2 = copy(binnedTrack)
-binnedTrack2[, value := value*abs(rnorm(nrow(binnedTrack2)))]
-ggk$add_track(binnedTrack, 1e5)
-ggk$add_track(binnedTrack2, 1e5)
-loiData = lois
-ggk$add_lois(loiData, "center", "sample")
-ggk$plot_full()
+?ggkaryo
 ```
 
 Contributing

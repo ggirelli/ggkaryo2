@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ###  ...
 - ...
 
+## [0.0.3] - 2019-08-02
+### Fixed
+- Bug that converted NA's to 0s.
+
 ## [0.0.2] - 2019-06-20
 ### Added
 - Options for choosing which legend(s) to show.
@@ -23,3 +27,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 [Unreleased] https://github.com/ggirelli/ggkaryo/
 [0.0.1] https://github.com/ggirelli/gpseq-img-py/releases/tag/v0.0.1
+[0.0.2] https://github.com/ggirelli/gpseq-img-py/releases/tag/v0.0.2
+[0.0.3] https://github.com/ggirelli/gpseq-img-py/releases/tag/v0.0.3
