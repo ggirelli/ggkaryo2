@@ -529,7 +529,7 @@ ggkaryo <- setRefClass("ggkaryo",
       track = track[, 1:5]
       colnames(track) = c("chrom", "start", "end", "name", "value")
       track[, chromID := unlist(lapply(chrom, .self$chrom2id))]
-      track[is.na(value), value := 0]
+      #track[is.na(value), value := 0]
 
       track = track[order(start)]
       track = track[order(chromID)]
@@ -618,7 +618,7 @@ ggkaryo <- setRefClass("ggkaryo",
 
     add_arm_boxes = function() {
       "Adds boxes around chromosome arms."
-      .self$data$plot$trackLayer = .self$data$plot$trackLayer + geom_path(
+      .self$data$plot$baseLayer = .self$data$plot$baseLayer + geom_path(
         data=.self$data[['boxes']], aes(group=paste0(chrom, "_", arm_id)),
         color="black")
     },
