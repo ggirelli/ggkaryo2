@@ -133,7 +133,7 @@ ggkaryo <- setRefClass("ggkaryo",
           "#DDDDDD", "#9A9A9A", "#787878", "#555555", "#333333",
           "#FF0000", "#C4FFFC", "#AFE6FF"),
         giemsa_levels=c(
-          "gneg", "gpos25", "gpos50", "gpos75", "gpos100",
+          "gneg", "gpos25", 'gpos33', "gpos50", 'gpos66', "gpos75", "gpos100",
           "acen", "gvar", "stalk"),
         opposite=FALSE,
         show_giemsa_guide = F,
