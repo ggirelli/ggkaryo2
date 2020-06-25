@@ -130,7 +130,7 @@ ggkaryo <- setRefClass("ggkaryo",
         chrom_width=1, chrom_padding=5,
         track_palette_name="Paired", lois_palette_name="Dark2",
         giemsa_palette=c(
-          "#DDDDDD", "#9A9A9A", "#787878", "#555555", "#333333",
+          "#DDDDDD", "#C0C0C0", "#A8A8A8", "#808080", "#545454", "#404040", "#000000",
           "#FF0000", "#C4FFFC", "#AFE6FF"),
         giemsa_levels=c(
           "gneg", "gpos25", 'gpos33', "gpos50", 'gpos66', "gpos75", "gpos100",
@@ -253,23 +253,26 @@ ggkaryo <- setRefClass("ggkaryo",
         bandID = rep(.self$data[["giemsa"]]$bandID, each = 4)
       )
       non_acen_bands = non_acen_bands[non_acen_bands$value != "acen",]
+      .self$data[["bands"]] = non_acen_bands
 
-      acen_data = .self$data[["giemsa"]][value == "acen", .(
-          start = min(start), end = max(end), name = NA, value = "acen",
-          x = x[1], bandID = bandID[1]
-        ), by = c("chrom", "chromID")]
-      acen_bands = data.table(
-        chrom = rep(acen_data$chrom, each = 4),
-        chromID = rep(acen_data$chromID, each = 4),
-        y = c(t(cbind(acen_data$start, acen_data$start,
-          acen_data$end, acen_data$end))),
-        x = c(t(cbind(acen_data$x, acen_data$x+.self$chrom_width,
-          acen_data$x, acen_data$x+.self$chrom_width))),
-        value = rep(acen_data$value, each = 4),
-        bandID = rep(acen_data$bandID, each = 4)
-      )
+      if ( 0 != .self$data[["giemsa"]][value == "acen", .N] ) {
+        acen_data = .self$data[["giemsa"]][value == "acen", .(
+            start = min(start), end = max(end), name = NA, value = "acen",
+            x = x[1], bandID = bandID[1]
+          ), by = c("chrom", "chromID")]
+        acen_bands = data.table(
+          chrom = rep(acen_data$chrom, each = 4),
+          chromID = rep(acen_data$chromID, each = 4),
+          y = c(t(cbind(acen_data$start, acen_data$start,
+            acen_data$end, acen_data$end))),
+          x = c(t(cbind(acen_data$x, acen_data$x+.self$chrom_width,
+            acen_data$x, acen_data$x+.self$chrom_width))),
+          value = rep(acen_data$value, each = 4),
+          bandID = rep(acen_data$bandID, each = 4)
+        )
+        .self$data[["bands"]] = rbind(.self$data[["bands"]], acen_bands)
+      }
 
-      .self$data[["bands"]] = rbind(non_acen_bands, acen_bands)
       .self$data[["bands"]][, value := factor(value,
         levels = .self$giemsa_levels)]
       NULL
@@ -285,6 +288,9 @@ ggkaryo <- setRefClass("ggkaryo",
       select_chrom_arms = function(chrom_data) {
         chrom_x = .self$chromID2x(chrom_data[1, chromID])
         acen_band_ids = which(chrom_data$value == "acen")
+        if ( 0 == length(acen_band_ids) ) {
+          acen_band_ids = c(nrow(chrom_data)+1)
+        }
         if ( ! 1 %in% acen_band_ids ) {
           p_arm_data = chrom_data[1:(min(acen_band_ids)-1), .(
               x = c(chrom_x, chrom_x,
